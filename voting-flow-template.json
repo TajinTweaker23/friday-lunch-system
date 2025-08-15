@@ -1,0 +1,118 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    }
+  },
+  "triggers": {
+    "Recurrence": {
+      "recurrence": {
+        "frequency": "Week",
+        "interval": 1,
+        "schedule": {
+          "hours": ["12"],
+          "minutes": [0],
+          "weekDays": ["Thursday"]
+        },
+        "timeZone": "Eastern Standard Time"
+      },
+      "type": "Recurrence"
+    }
+  },
+  "actions": {
+    "Get_Participants": {
+      "runAfter": {},
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/datasets/@{encodeURIComponent(encodeURIComponent('YOUR_SHAREPOINT_SITE'))}/tables/@{encodeURIComponent(encodeURIComponent('Participants'))}/items",
+        "queries": {
+          "$filter": "Active eq true"
+        }
+      }
+    },
+    "Get_Restaurant_Options": {
+      "runAfter": {
+        "Get_Participants": ["Succeeded"]
+      },
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/datasets/@{encodeURIComponent(encodeURIComponent('YOUR_SHAREPOINT_SITE'))}/tables/@{encodeURIComponent(encodeURIComponent('Restaurant_Options'))}/items",
+        "queries": {
+          "$filter": "Active eq true"
+        }
+      }
+    },
+    "Create_Voting_Form_HTML": {
+      "runAfter": {
+        "Get_Restaurant_Options": ["Succeeded"]
+      },
+      "type": "Compose",
+      "inputs": {
+        "voting_form": "@concat('<h2>🍕 Weekly Lunch Voting - Week of ', formatDateTime(utcnow(), 'MM/dd/yyyy'), '</h2><p>Vote for this week''s restaurant! Voting closes Friday at 7:45 AM.</p><form action=\"YOUR_VOTING_FORM_URL\" method=\"post\"><div>')"
+      }
+    },
+    "Send_Voting_Emails": {
+      "runAfter": {
+        "Create_Voting_Form_HTML": ["Succeeded"]
+      },
+      "type": "Foreach",
+      "foreach": "@body('Get_Participants')?['value']",
+      "actions": {
+        "Send_Voting_Email": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['office365']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/v2/Mail",
+            "body": {
+              "To": "@items('Send_Voting_Emails')?['EmailAddress']",
+              "Subject": "🗳️ Weekly Lunch Voting is Open!",
+              "Body": "@concat('<h2>Hi ', items('Send_Voting_Emails')?['FullName'], '!</h2><p>It''s Thursday - time to vote for this week''s lunch restaurant!</p><p><strong>Voting closes Friday at 7:45 AM</strong></p><h3>This week''s options:</h3><ul>', join(select(body('Get_Restaurant_Options')?['value'], concat('<li>', item()?['RestaurantName'], '</li>')), ''), '</ul><p><a href=\"YOUR_VOTING_FORM_LINK\" style=\"background-color: #0078d4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">VOTE NOW</a></p><p>Questions? Reply to this email.</p>')",
+              "IsHtml": true
+            }
+          }
+        }
+      }
+    },
+    "Log_Voting_Started": {
+      "runAfter": {
+        "Send_Voting_Emails": ["Succeeded"]
+      },
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['office365']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/v2/Mail",
+        "body": {
+          "To": "YOUR_COORDINATOR_EMAIL",
+          "Subject": "✅ LISTO: Voting Started",
+          "Body": "@concat('<h2>Weekly Lunch Voting Started</h2><p><strong>Time:</strong> ', formatDateTime(utcnow(), 'MM/dd/yyyy hh:mm tt'), '</p><p><strong>Participants Notified:</strong> ', length(body('Get_Participants')?['value']), '</p><p><strong>Restaurant Options:</strong> ', length(body('Get_Restaurant_Options')?['value']), '</p><p>Voting will close automatically Friday at 7:45 AM.</p>')",
+          "IsHtml": true
+        }
+      }
+    }
+  }
+}
