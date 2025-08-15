@@ -1,0 +1,96 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    }
+  },
+  "triggers": {
+    "Recurrence": {
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "schedule": {
+          "hours": ["9"],
+          "minutes": [45]
+        },
+        "timeZone": "Eastern Standard Time"
+      },
+      "type": "Recurrence",
+      "metadata": {
+        "description": "⚡ IMMEDIATE TEST: Set to 9:45 AM today. Change to Friday 7:45 AM for production."
+      }
+    }
+  },
+  "actions": {
+    "Get_Test_Votes": {
+      "runAfter": {},
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://oemeta01.sharepoint.com/sites/OemetaNorthAmerica'))}/tables/@{encodeURIComponent(encodeURIComponent('Weekly_Votes'))}/items",
+        "queries": {
+          "$filter": "@concat('WeekNumber eq ', div(sub(ticks(utcnow()), ticks('1970-01-01T00:00:00Z')), 604800000))"
+        }
+      }
+    },
+    "Determine_Test_Winner": {
+      "runAfter": {
+        "Get_Test_Votes": ["Succeeded"]
+      },
+      "type": "Compose",
+      "inputs": "@if(greater(length(body('Get_Test_Votes')?['value']), 1), 'Pizza Palace', 'Pizza Palace')"
+    },
+    "Send_Test_Winner_Email": {
+      "runAfter": {
+        "Determine_Test_Winner": ["Succeeded"]
+      },
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['office365']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/v2/Mail",
+        "body": {
+          "To": "pacheco@oemeta.com",
+          "Subject": "🏆 TEST: This Week's Lunch Winner + Order Now!",
+          "Body": "@concat('<h2>🧪 TESTING MODE - Only You Will Receive This</h2><h3>🎉 This Week''s Winning Restaurant:</h3><h1 style=\"color: #0078d4; text-align: center;\">', outputs('Determine_Test_Winner'), '</h1><p><strong>Votes received:</strong> ', sub(length(body('Get_Test_Votes')?['value']), 1), '</p><hr><h3>🍔 Time to Place Your Order!</h3><p>You have until <strong>10:00 AM today</strong> to submit your individual lunch order.</p><div style=\"text-align: center; margin: 20px 0;\"><a href=\"https://forms.office.com/e/CxqgqQJeFh\" style=\"background-color: #28a745; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-size: 16px; display: inline-block;\">🍔 PLACE YOUR ORDER</a></div><p><em>Orders will be collected at 10:00 AM for testing.</em></p><p><em>🔧 This is a test email. Only you are receiving this.</em></p>')",
+          "IsHtml": true,
+          "Importance": "High"
+        }
+      }
+    },
+    "Create_Winner_Log": {
+      "runAfter": {
+        "Send_Test_Winner_Email": ["Succeeded"]
+      },
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://oemeta01.sharepoint.com/sites/OemetaNorthAmerica'))}/tables/@{encodeURIComponent(encodeURIComponent('Weekly_Votes'))}/items",
+        "body": {
+          "Title": "TEST WINNER SELECTED",
+          "VoterName": "SYSTEM_TEST",
+          "RestaurantChoice": "@outputs('Determine_Test_Winner')",
+          "VoteDate": "@utcnow()",
+          "WeekNumber": "@div(sub(ticks(utcnow()), ticks('1970-01-01T00:00:00Z')), 604800000)"
+        }
+      }
+    }
+  }
+}

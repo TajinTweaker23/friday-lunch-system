@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    }
+  },
+  "triggers": {
+    "When_a_new_response_is_submitted": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['microsoftforms']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/formapi/api/forms/dH0SR0c1Gj/responses"
+      }
+    }
+  },
+  "actions": {
+    "Get_response_details": {
+      "runAfter": {},
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['microsoftforms']['connectionId']"
+          }
+        },
+        "method": "get",
+        "path": "/formapi/api/forms/dH0SR0c1Gj/responses/@{triggerBody()?['resourceData']?['responseId']}"
+      }
+    },
+    "Save_Vote_to_SharePoint": {
+      "runAfter": {
+        "Get_response_details": ["Succeeded"]
+      },
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://oemeta01.sharepoint.com/sites/OemetaNorthAmerica'))}/tables/@{encodeURIComponent(encodeURIComponent('Weekly_Votes'))}/items",
+        "body": {
+          "Title": "@concat(body('Get_response_details')?['responses'][0]?['r1'], ' - Vote')",
+          "VoterName": "@body('Get_response_details')?['responses'][0]?['r1']",
+          "RestaurantChoice": "@body('Get_response_details')?['responses'][0]?['r2']", 
+          "VoteDate": "@utcnow()",
+          "WeekNumber": "@div(sub(ticks(utcnow()), ticks('1970-01-01T00:00:00Z')), 604800000)"
+        }
+      }
+    },
+    "Send_Vote_Confirmation": {
+      "runAfter": {
+        "Save_Vote_to_SharePoint": ["Succeeded"]
+      },
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['office365']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/v2/Mail",
+        "body": {
+          "To": "pacheco@oemeta.com",
+          "Subject": "✅ Vote Recorded Successfully!",
+          "Body": "@concat('<h2>Vote Confirmation</h2><p><strong>Voter:</strong> ', body('Get_response_details')?['responses'][0]?['r1'], '</p><p><strong>Restaurant Choice:</strong> ', body('Get_response_details')?['responses'][0]?['r2'], '</p><p><strong>Time:</strong> ', formatDateTime(utcnow(), 'hh:mm tt'), '</p><p>Your vote has been recorded! Winner will be announced Friday at 7:45 AM.</p><p><em>🔧 Testing: Only you receive this confirmation.</em></p>')",
+          "IsHtml": true
+        }
+      }
+    }
+  }
+}
