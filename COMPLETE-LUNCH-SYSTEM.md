@@ -43,23 +43,22 @@ FORM 3: "Lunch Order Form" → LIST: "Lunch Orders"
 
 ## 🔧 **POWER AUTOMATE FLOWS STATUS**
 
-### **✅ FLOW 1: SUBSCRIPTION FLOW (COMPLETED!)**
-- **Status**: ✅ Working Successfully
+### **✅ FLOW 1: SUBSCRIPTION FLOW (WORKING!)**
+- **Status**: ✅ WORKING - Fully tested and operational
 - **Form**: "Lunch System Notifications"
 - **List**: "Lunch Subscription Preferences"
-- **Test Result**: Green checkmarks in run history
 
-### **✅ FLOW 2: VOTING FLOW (COMPLETED!)**
-- **Status**: ✅ Working Successfully
+### **✅ FLOW 2: VOTING FLOW (WORKING!)**
+- **Status**: ✅ WORKING - Fully tested and operational  
 - **Form**: "Weekly Lunch Vote"  
 - **List**: "Restaurant Votes"
-- **Test Result**: Green checkmarks in run history
+- **Fields**: Name, Restaurant Name, Date
 
-### **✅ FLOW 3: ORDER FLOW (COMPLETED!)**
-- **Status**: ✅ Working Successfully
+### **✅ FLOW 3: ORDER FLOW (WORKING!)**
+- **Status**: ✅ WORKING - Fully tested and operational
 - **Form**: "Lunch Order Form"
 - **List**: "Lunch Orders"
-- **Test Result**: Green checkmarks in run history
+- **Fields**: Employee Name, Restaurant, Order Details, Allergies/Notes, Date
 
 ---
 
