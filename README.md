@@ -1,49 +1,71 @@
-# Friday Lunch Ordering System (LISTO)
+# 🍽️ Friday Lunch Coordination System
 
-**🍽️ Automated Weekly Lunch Coordination System**
+**✅ FULLY OPERATIONAL - All Flows Working Successfully!**
 
-## 📋 What This System Does
+## 🎯 **System Overview**
 
-- **Thursday 12:00 PM**: Automatically starts restaurant voting via email
-- **Forms capture votes**: People vote using Microsoft Forms
-- **Friday 7:45 AM**: Announces winner, starts individual order collection
-- **Forms capture orders**: People submit lunch orders via Microsoft Forms
-- **Friday 11:00 AM**: Sends you complete organized order summary
+Automated lunch coordination system using Microsoft Forms, SharePoint Lists, and Power Automate flows.
 
-## 🎯 Your Configuration
+### **✅ Complete Working System:**
+- **Flow 1**: Subscription Management (Lunch System Notifications → Lunch Subscription Preferences)
+- **Flow 2**: Weekly Voting (Weekly Lunch Vote → Restaurant Votes) 
+- **Flow 3**: Order Processing (Lunch Order Form → Lunch Orders)
 
-- **SharePoint Site**: `https://oemeta01.sharepoint.com/sites/OemetaNorthAmerica`
-- **Voting Form**: `https://forms.office.com/e/dH0SR0c1Gj`
-- **Order Form**: `https://forms.office.com/e/CxqgqQJeFh`
-- **Testing Email**: `pacheco@oemeta.com` (marked for easy replacement with coordinator's email)
+### **📋 SharePoint Lists:**
+- **Lunch Subscription Preferences** - One-time user preferences
+- **Restaurant Votes** - Weekly voting results
+- **Lunch Orders** - Individual order details
+- **Restaurant List** - Master restaurant database
 
-## 🚀 Ready to Deploy
+### **📝 Microsoft Forms:**
+- **Lunch System Notifications** - Subscription signup
+- **Weekly Lunch Vote** - Restaurant voting
+- **Lunch Order Form** - Individual orders
 
-All flows are configured with your specific details. Follow the **MASTER-DEPLOYMENT-GUIDE.md** for complete step-by-step instructions.
+## 🚀 **User Workflow**
 
-## 📁 System Files
+### **For Team Members:**
+1. **Week 1**: Fill out subscription form (one-time setup)
+2. **Every Thursday**: Vote on restaurant choice
+3. **After voting closes**: Place individual lunch orders
+4. **Friday**: Enjoy lunch!
 
-### Core Flows (Ready to Import)
-- `TEST-voting-flow-9-30AM.json` - Sends voting emails (configured for immediate testing)
-- `TEST-winner-flow-9-45AM.json` - Calculates winner & announces (configured for immediate testing)
-- `TEST-summary-flow-10-00AM.json` - Compiles & sends order summary (configured for immediate testing)
-- `VOTE-CAPTURE-FLOW.zip` - Automatically saves votes from Microsoft Forms to SharePoint
-- `ORDER-CAPTURE-FLOW.zip` - Automatically saves orders from Microsoft Forms to SharePoint
+### **For Coordinator:**
+1. **Check "Restaurant Votes" list** → Determine winner
+2. **Send order form** to team
+3. **Check "Lunch Orders" list** → Place group order
+4. **Coordinate pickup/delivery**
 
-### Setup & Infrastructure
-- `sharepoint-setup.ps1` - Creates required SharePoint lists
-- `complete-deployment.ps1` - Full automated deployment (for Windows environments)
-- `dashboard-code.html` - Admin control panel interface
+## 📁 **Repository Files**
 
-### Documentation
-- `MASTER-DEPLOYMENT-GUIDE.md` - Complete step-by-step instructions
-- `troubleshooting.md` - Common issues and solutions
-- `email-templates.md` - All email templates used by the system
-- `microsoft-forms-setup.md` - Forms creation guide
+### **🎯 Core Documentation**
+- `COMPLETE-LUNCH-SYSTEM.md` - Complete system architecture and setup guide
+- `DEFINITIVE-SETUP-GUIDE.md` - Detailed Power Automate configuration steps
+- `README.md` - This overview file
 
-## ✅ System Status: Ready for Testing
+### **⚙️ System Configuration**
+All flows are configured using Power Automate template method:
+- **Trigger**: "When a new response is submitted" (Microsoft Forms)
+- **Action**: "Create item" (SharePoint)
+- **Field Mapping**: Dynamic content from forms to SharePoint lists
 
-The system is **completely configured** and ready for immediate testing. All flows include your SharePoint site, form URLs, and email addresses with clear markers for easy replacement when moving to production.
+## ✅ **System Status: Production Ready**
+
+### **All Flows Tested and Working:**
+- ✅ **Subscription Flow**: Successfully saving user preferences
+- ✅ **Voting Flow**: Successfully capturing restaurant votes with dates
+- ✅ **Order Flow**: Successfully processing individual lunch orders
+
+### **Technology Stack:**
+- ✅ Microsoft Forms (3 forms)
+- ✅ SharePoint Lists (4 lists) 
+- ✅ Power Automate (3 flows)
+- ✅ Dynamic content mapping
+- ✅ Expression-based automation
+
+## 🎉 **Ready for Team Rollout!**
+
+The system has been tested and is working perfectly. All three flows show "Succeeded" status with green checkmarks in run history.
 - Real-time status, quick actions, activity logs
 - Modern responsive design
 
